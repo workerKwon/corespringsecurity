@@ -1,51 +1,45 @@
 package io.security.corespringsecurity.security.provider;
 
-import io.security.corespringsecurity.security.common.FormWebAuthenticationDetails;
 import io.security.corespringsecurity.security.service.AccountContext;
 import io.security.corespringsecurity.security.token.AjaxAuthenticationToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/**
- * 실제로 인증 처리를 하는 클래스
- */
+import javax.transaction.Transactional;
+
+@Slf4j
 public class AjaxAuthenticationProvider implements AuthenticationProvider {
+
     @Autowired
     private UserDetailsService userDetailsService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
 
-    /**
-     * 실제 인증 처리하는 메소드
-     */
+    public AjaxAuthenticationProvider(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Override
+    @Transactional
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
-        String username = authentication.getName();
+        String loginId = authentication.getName();
         String password = (String) authentication.getCredentials();
 
-        AccountContext userDetails = (AccountContext) userDetailsService.loadUserByUsername(username);
+        AccountContext accountContext = (AccountContext)userDetailsService.loadUserByUsername(loginId);
 
-        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw new BadCredentialsException("BadCredentialsException");
+        if (!passwordEncoder.matches(password, accountContext.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
         }
 
-        /**
-         * 추가적인 인증 절차 추가
-         */
-
-        /**
-         * AuthenticationManager에게 인증 객체 반환.
-         */
-        return new AjaxAuthenticationToken(userDetails.getAccount(), null, userDetails.getAuthorities());
+        return new AjaxAuthenticationToken(accountContext.getAccount(), null, accountContext.getAuthorities());
     }
 
     @Override

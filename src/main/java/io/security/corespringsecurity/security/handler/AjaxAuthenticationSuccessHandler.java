@@ -1,29 +1,36 @@
 package io.security.corespringsecurity.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.security.corespringsecurity.domain.Account;
+import io.security.corespringsecurity.domain.entity.Account;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 public class AjaxAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
+        Account account = (Account) authentication.getPrincipal();
 
-        Account account = (Account) authentication.getPrincipal();// 인증에 최종 성공한 객체의 account 객체를 저장함
+        response.setStatus(HttpStatus.OK.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        httpServletResponse.setStatus(HttpStatus.OK.value());
-        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//        HttpSession session = request.getSession();
+//        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
-        objectMapper.writeValue(httpServletResponse.getWriter(), account); // account 객체를 json 형식으로 변환해서 클라이언트에 전달한다.
+        mapper.writeValue(response.getWriter(), account);
     }
 }
