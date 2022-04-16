@@ -18,12 +18,16 @@ public class UrlFilterInvocationSecurityMetadataSource implements FilterInvocati
 
     /**
      * ConfigAttribute: 권한 정보 객체
+     * 자원과 권한 정보가 매핑된 객체
      */
     private LinkedHashMap<RequestMatcher, List<ConfigAttribute>> requestMap = new LinkedHashMap<>();
 
+    public UrlFilterInvocationSecurityMetadataSource(LinkedHashMap<RequestMatcher, List<ConfigAttribute>> resourcesMap) {
+        this.requestMap = resourcesMap;
+    }
 
     @Override
-    public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
+    public Collection<ConfigAttribute> getAttributes(Object object) {
 
         /**
          * 사용자가 요청하는 요청 객체
@@ -31,7 +35,7 @@ public class UrlFilterInvocationSecurityMetadataSource implements FilterInvocati
         HttpServletRequest request = ((FilterInvocation) object).getRequest();
 
         // 임의로 준 url 자원에 따른 권한
-        requestMap.put(new AntPathRequestMatcher("/mypage"), Arrays.asList(new SecurityConfig("ROLUE_USER")));
+//        requestMap.put(new AntPathRequestMatcher("/mypage"), Arrays.asList(new SecurityConfig("ROLUE_USER")));
 
         /**
          * 디비에서 가져온 URL 자원 인가 정보와 사용자 요청 정보가 매치되면 DB에서 가져온 권한 정보를 추출해서 반환
