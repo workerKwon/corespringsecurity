@@ -10,12 +10,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,7 +58,32 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration{
         return accessDecisionManager;
     }
 
+    /**
+     * RoleHierarchyVoter를 추가해서 사용한다.
+     */
     private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
-        return Arrays.asList(new RoleVoter());
+        List<AccessDecisionVoter<? extends Object>> accessDecisionVoters = new ArrayList<>();
+//        accessDecisionVoters.add(new RoleVoter());
+        accessDecisionVoters.add(roleVoter());
+        return accessDecisionVoters;
+    }
+
+    /**
+     * 포맷팅된 계층권한 데이터를 가지고 있는 RoleHierarchyImpl 객체를 voter에 넣어준다.
+     */
+    @Bean
+    public AccessDecisionVoter<? extends Object> roleVoter() {
+        RoleHierarchyVoter roleHierarchyVoter = new RoleHierarchyVoter(roleHierarch());
+        return roleHierarchyVoter;
+    }
+
+    /**
+     * 구현체가 가지고 있는 메소드가 있기 때문에 Imple로 반환한다.
+     * @return
+     */
+    @Bean
+    public RoleHierarchyImpl roleHierarch() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        return roleHierarchy;
     }
 }
