@@ -4,23 +4,21 @@ import io.security.corespringsecurity.security.factory.UrlResourcesMapFactoryBea
 import io.security.corespringsecurity.security.filter.PermitAllFilter;
 import io.security.corespringsecurity.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import io.security.corespringsecurity.security.service.SecurityResourceService;
+import io.security.corespringsecurity.security.voter.IpAddressVoter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
-import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -52,6 +50,9 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration{
         return urlResourcesMapFactoryBean;
     }
 
+    /**
+     * 접근 결정 관리자
+     */
     @Bean
     public AccessDecisionManager affirmativeBased() {
         AffirmativeBased accessDecisionManager = new AffirmativeBased(getAccessDecisionVoters());
@@ -60,10 +61,12 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration{
 
     /**
      * RoleHierarchyVoter를 추가해서 사용한다.
+     * IpAddressVoter를 추가해서 사용한다.
      */
     private List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         List<AccessDecisionVoter<? extends Object>> accessDecisionVoters = new ArrayList<>();
 //        accessDecisionVoters.add(new RoleVoter());
+        accessDecisionVoters.add(new IpAddressVoter(securityResourceService)); // IpAddressVoter가 가장 먼저 심사되어야 한다.
         accessDecisionVoters.add(roleVoter());
         return accessDecisionVoters;
     }
