@@ -40,9 +40,24 @@ public class SecurityResourceService {
             // resource에 엮여있는 권한들을 List로 묶는다.
             resources.getRoleSet().forEach(role -> {
                 configAttributes.add(new SecurityConfig(role.getRoleName()));
-                result.put(new AntPathRequestMatcher(resources.getResourceName()), configAttributes);
             });
-//            result.put(new AntPathRequestMatcher(resources.getResourceName()), configAttributes);
+            result.put(new AntPathRequestMatcher(resources.getResourceName()), configAttributes);
+        });
+
+        return result;
+    }
+
+    public LinkedHashMap<String, List<ConfigAttribute>> getMethodResourceList() {
+
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+        List<Resources> resourcesList = resourcesRepository.findAllMethodResources();
+        resourcesList.forEach(resources -> {
+            List<ConfigAttribute> configAttributes = new ArrayList<>();
+            // resource에 엮여있는 권한들을 List로 묶는다.
+            resources.getRoleSet().forEach(role -> {
+                configAttributes.add(new SecurityConfig(role.getRoleName()));
+            });
+            result.put(resources.getResourceName(), configAttributes);
         });
 
         return result;
