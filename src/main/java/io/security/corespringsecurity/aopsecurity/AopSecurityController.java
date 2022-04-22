@@ -18,6 +18,9 @@ public class AopSecurityController {
     @Autowired
     private AopPointcutService aopPointcutService;
 
+    @Autowired
+    private AopLiveMethodService aopLiveMethodService;
+
     @GetMapping("/preAuthorize")
     @PreAuthorize("hasRole('ROLE_USER') and #accountDto.username == principal.username")
     public String preAuthorize(AccountDto accountDto, Model model, Principal principal) {
@@ -41,6 +44,15 @@ public class AopSecurityController {
         aopPointcutService.notSecured();
         aopPointcutService.pointcutSecured();
         model.addAttribute("method", "Success PointcutSecured");
+
+        return "aop/method";
+    }
+
+    @GetMapping("/liveMethodSecured")
+    public String liveMethodSecured(Model model){
+
+        aopLiveMethodService.liveMethodSecured();
+        model.addAttribute("method", "Success LiveMethodSecured");
 
         return "aop/method";
     }
